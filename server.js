@@ -10,11 +10,6 @@ const ENVIRONMENT_ID = process.env.ENVIRONMENT_ID;
 const SERVICE_ID = process.env.SERVICE_ID;
 const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
 
-// Whitelist
-const WHITELIST = process.env.WHITELIST
-  ? process.env.WHITELIST.split(",").map((n) => n.trim())
-  : [];
-
 if (!PROJECT_ID || !ENVIRONMENT_ID || !SERVICE_ID || !RAILWAY_API_TOKEN) {
   console.error("[FATAL] Missing one of PROJECT_ID, ENVIRONMENT_ID, SERVICE_ID, or RAILWAY_API_TOKEN");
   process.exit(1);
@@ -104,12 +99,10 @@ const server = net.createServer((socket) => {
         return;
       }
 
-      console.log(`[CONNECT] Player "${username}" pings the server`);
-
-      // Whitelist check
-      if (!WHITELIST.includes(username)) {
-        console.log(`[DENY] ${username} is not in whitelist: ${WHITELIST}`);
-        socket.end("§cYou are not whitelisted.\n");
+      // Ignore MOTD pings
+      if (username.includes("MCPingHost")) {
+        console.log("[PING] Ignoring server list ping");
+        socket.end();
         return;
       }
 
