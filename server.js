@@ -104,14 +104,7 @@ const server = net.createServer((socket) => {
         return;
       }
 
-      // Ignore MOTD pings
-      if (username.includes("MCPingHost")) {
-        console.log("[PING] Ignoring server list ping");
-        socket.end();
-        return;
-      }
-
-      console.log(`[CONNECT] Player "${username}" tried to join`);
+      console.log(`[CONNECT] Player "${username}" pings the server`);
 
       // Whitelist check
       if (!WHITELIST.includes(username)) {
