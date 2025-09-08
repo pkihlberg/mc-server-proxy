@@ -11,7 +11,7 @@ const SERVICE_ID = process.env.SERVICE_ID;
 const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
 
 // MC server health check address (Node backup container)
-const MC_SERVER_HEALTH = process.env.MC_SERVER_HEALTH || "http://mc-backup.pontuskihlberg.se:3000/health";
+const MC_SERVER_HEALTH = process.env.MC_SERVER_HEALTH || "http://mc-backup.pontuskihlberg.se/health";
 
 if (!PROJECT_ID || !ENVIRONMENT_ID || !SERVICE_ID || !RAILWAY_API_TOKEN) {
   console.error("[FATAL] Missing one of PROJECT_ID, ENVIRONMENT_ID, SERVICE_ID, or RAILWAY_API_TOKEN");
@@ -45,9 +45,11 @@ async function isServerRunning() {
 
     const data = await res.json();
 
-    if (data.status === "active") console.log(`[HEALTH] Server health check completed: status ${res.status}`);
+    const isServiceUp = data.status === "active"
 
-    return true;
+    if (isServiceUp) console.log(`[HEALTH] Server health check completed: status ${res.status}`);
+
+    return isServiceUp;
   } catch (err) {
     console.error("[HEALTH] Error checking server:", err.message);
     return false; // If unreachable, assume not running
