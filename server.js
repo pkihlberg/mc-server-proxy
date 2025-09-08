@@ -10,6 +10,9 @@ const ENVIRONMENT_ID = process.env.ENVIRONMENT_ID;
 const SERVICE_ID = process.env.SERVICE_ID;
 const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
 
+// MC server health check address (Node backup container)
+const MC_SERVER_HEALTH = process.env.MC_SERVER_HEALTH || "http://mc-backup.pontuskihlberg.se:3000/health";
+
 if (!PROJECT_ID || !ENVIRONMENT_ID || !SERVICE_ID || !RAILWAY_API_TOKEN) {
   console.error("[FATAL] Missing one of PROJECT_ID, ENVIRONMENT_ID, SERVICE_ID, or RAILWAY_API_TOKEN");
   process.exit(1);
@@ -22,6 +25,18 @@ let restarting = false;
 let lastWake = 0;
 const COOLDOWN_MS = 60000;
 
+// --- Utility: check if MC server is running ---
+async function isServerRunning() {
+  try {
+    const res = await fetch(MC_SERVER_HEALTH);
+    const data = await res.json();
+    return data.status === "active";
+  } catch (err) {
+    return false; // If unreachable, assume not running
+  }
+}
+
+// --- Fetch latest deployment ---
 async function fetchLatestDeployment() {
   const query = `
     query deployments {
@@ -64,6 +79,7 @@ async function fetchLatestDeployment() {
   return edges[0].node;
 }
 
+// --- Restart deployment ---
 async function restartDeployment(deploymentId) {
   const mutation = `
     mutation {
@@ -90,6 +106,7 @@ async function restartDeployment(deploymentId) {
   return true;
 }
 
+// --- Proxy server ---
 const server = net.createServer((socket) => {
   socket.once("data", async (data) => {
     try {
@@ -103,6 +120,13 @@ const server = net.createServer((socket) => {
       if (username.includes("MCPingHost")) {
         console.log("[PING] Ignoring server list ping");
         socket.end();
+        return;
+      }
+
+      // Check if server is already running
+      if (await isServerRunning()) {
+        console.log("[SKIP] MC server already running, no restart needed");
+        socket.end("§eServer is already online, please join!\n");
         return;
       }
 
