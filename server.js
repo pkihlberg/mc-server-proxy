@@ -33,8 +33,10 @@ async function isServerRunning() {
     const auth = Buffer.from(`${user}:${pass}`).toString("base64");
 
     const res = await fetch(MC_SERVER_HEALTH, {
+      method: "POST",
       headers: {
         "Authorization": `Basic ${auth}`,
+        "Content-Type": "application/json",
       },
     });
 
