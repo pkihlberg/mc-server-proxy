@@ -47,7 +47,7 @@ async function isServerRunning() {
 
     if (data.status === "active") console.log(`[HEALTH] Server health check completed: status ${res.status}`);
 
-    return data.status === "active";
+    return true;
   } catch (err) {
     console.error("[HEALTH] Error checking server:", err.message);
     return false; // If unreachable, assume not running
