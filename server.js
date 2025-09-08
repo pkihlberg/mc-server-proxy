@@ -29,7 +29,13 @@ const COOLDOWN_MS = 60000;
 async function isServerRunning() {
   try {
     const user = process.env.HEALTH_USER || "admin";
-    const pass = process.env.HEALTH_PASS || "secret";
+    const pass = process.env.HEALTH_PASS;
+
+    if (!pass) {
+      console.error("[HEALTH] Missing HEALTH_PASS env var");
+      return false
+    };
+
     const auth = Buffer.from(`${user}:${pass}`).toString("base64");
 
     const res = await fetch(MC_SERVER_HEALTH, {
