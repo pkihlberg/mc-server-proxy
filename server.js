@@ -11,7 +11,7 @@ const SERVICE_ID = process.env.SERVICE_ID;
 const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
 
 // MC server health check address (Node backup container)
-const MC_SERVER_HEALTH = process.env.MC_SERVER_HEALTH || "http://mc-backup.pontuskihlberg.se/health";
+const MC_SERVER_HEALTH = process.env.MC_SERVER_HEALTH || "https://mc-backup.pontuskihlberg.se/health";
 
 if (!PROJECT_ID || !ENVIRONMENT_ID || !SERVICE_ID || !RAILWAY_API_TOKEN) {
   console.error("[FATAL] Missing one of PROJECT_ID, ENVIRONMENT_ID, SERVICE_ID, or RAILWAY_API_TOKEN");
@@ -29,7 +29,7 @@ const COOLDOWN_MS = 60000;
 async function isServerRunning() {
   try {
     const user = process.env.HEALTH_USER || "admin";
-    const pass = process.env.HEALTH_PASS;
+    const pass = process.env.HEALTH_PASS || "pass";
 
     if (!pass) {
       console.error("[HEALTH] Missing HEALTH_PASS env var");
@@ -178,17 +178,19 @@ const server = net.createServer((socket) => {
 
       console.log("[INFO] Latest deployment:", deployment);
 
-      const ok = await restartDeployment(deployment.id);
-      if (ok) {
-        socket.end("§eServer is starting... please try again in ~30s.\n");
-      } else {
-        socket.end("§cError starting server, try again later.\n");
-      }
+      console.log('[INFO] Restarting...');
+
+      // const ok = await restartDeployment(deployment.id);
+      // if (ok) {
+      //   socket.end("§eServer is starting... please try again in ~30s.\n");
+      // } else {
+      //   socket.end("§cError starting server, try again later.\n");
+      // }
 
       // Reset lock after short cooldown
-      setTimeout(() => {
-        restarting = false;
-      }, COOLDOWN_MS);
+      // setTimeout(() => {
+      restarting = false;
+      // }, COOLDOWN_MS);
 
     } catch (e) {
       console.error("[ERROR] Handshake:", e.message);
