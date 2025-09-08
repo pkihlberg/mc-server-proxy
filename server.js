@@ -28,10 +28,28 @@ const COOLDOWN_MS = 60000;
 // --- Utility: check if MC server is running ---
 async function isServerRunning() {
   try {
-    const res = await fetch(MC_SERVER_HEALTH);
+    const user = process.env.HEALTH_USER || "admin";
+    const pass = process.env.HEALTH_PASS || "secret";
+    const auth = Buffer.from(`${user}:${pass}`).toString("base64");
+
+    const res = await fetch(MC_SERVER_HEALTH, {
+      headers: {
+        "Authorization": `Basic ${auth}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`[HEALTH] Server health check failed: ${res.status}`);
+      return false;
+    }
+
     const data = await res.json();
+
+    if (data.status === "active") console.log(`[HEALTH] Server health check completed: status ${res.status}`);
+
     return data.status === "active";
   } catch (err) {
+    console.error("[HEALTH] Error checking server:", err.message);
     return false; // If unreachable, assume not running
   }
 }
