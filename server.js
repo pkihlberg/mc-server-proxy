@@ -180,17 +180,17 @@ const server = net.createServer((socket) => {
 
       console.log('[INFO] Restarting...');
 
-      // const ok = await restartDeployment(deployment.id);
-      // if (ok) {
-      //   socket.end("§eServer is starting... please try again in ~30s.\n");
-      // } else {
-      //   socket.end("§cError starting server, try again later.\n");
-      // }
+      const ok = await restartDeployment(deployment.id);
+      if (ok) {
+        socket.end("§eServer is starting... please try again in ~30s.\n");
+      } else {
+        socket.end("§cError starting server, try again later.\n");
+      }
 
       // Reset lock after short cooldown
-      // setTimeout(() => {
-      restarting = false;
-      // }, COOLDOWN_MS);
+      setTimeout(() => {
+        restarting = false;
+      }, COOLDOWN_MS);
 
     } catch (e) {
       console.error("[ERROR] Handshake:", e.message);
